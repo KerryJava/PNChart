@@ -11,6 +11,8 @@
 #import "PNChartDelegate.h"
 #import "PNGenericChart.h"
 
+typedef UIColor*(^ColorByGradeBlock)(NSInteger grade);
+
 @interface PNLineChart : PNGenericChart
 
 /**
@@ -50,7 +52,6 @@
 @property (nonatomic) BOOL showGenYLabels;
 @property (nonatomic) BOOL thousandsSeparator;
 
-
 /**
  * Controls whether to show the coordinate axis. Default is NO.
  */
@@ -61,10 +62,21 @@
 @property (nonatomic, strong) NSString *xUnit;
 @property (nonatomic, strong) NSString *yUnit;
 
+@property (nonatomic) BOOL isNeedArrow;
 /**
  * String formatter for float values in y-axis labels. If not set, defaults to @"%1.f"
  */
 @property (nonatomic, strong) NSString *yLabelFormat;
+
+/**
+ *  display name
+ */
+
+@property (nonatomic, strong) UILabel* yNameLabel;
+@property (nonatomic, strong) UILabel* xNameLabel;
+
+@property (nonatomic, strong) ColorByGradeBlock colorbyGradeBlock;
+@property (nonatomic, strong) UIColor* fillColor;
 
 - (void)setXLabels:(NSArray *)xLabels withWidth:(CGFloat)width;
 

@@ -22,6 +22,7 @@
 
 @implementation PNBarChart
 
+#pragma mark init
 - (id)initWithCoder:(NSCoder *)aDecoder
 {
     self = [super initWithCoder:aDecoder];
@@ -48,7 +49,7 @@
     self.backgroundColor = [UIColor whiteColor];
     self.clipsToBounds   = YES;
     _showLabel           = YES;
-    _barBackgroundColor  = PNLightGrey;
+    _barBackgroundColor  = [UIColor whiteColor];//PNLightGrey;
     _labelTextColor      = [UIColor grayColor];
     _labelFont           = [UIFont systemFontOfSize:11.0f];
     _xChartLabels        = [NSMutableArray array];
@@ -62,6 +63,32 @@
     _showChartBorder     = NO;
     _yChartLabelWidth    = 18;
     _rotateForXAxisText  = false;
+    
+    [self addSubview:self.nameLabel];
+    [self addSubview:self.xNameLabel];
+}
+
+#pragma mark setter
+
+-(void)setName:(NSString *)name
+{
+    _name = name;
+    
+    self.nameLabel.text = name;
+}
+
+-(void)setYChartLabelWidth:(CGFloat)yChartLabelWidth
+{
+    _yChartLabelWidth = yChartLabelWidth;
+    
+   self.nameLabel.frame = CGRectMake(10, 10, _yChartLabelWidth*2, kYLabelHeight);
+}
+
+-(void)setXLabelWidth:(CGFloat)xLabelWidth
+{
+    _xLabelWidth = xLabelWidth;
+    
+    self.xNameLabel.frame = CGRectMake(0, 0, _xLabelWidth, kYLabelHeight);
 }
 
 - (void)setYValues:(NSArray *)yValues
@@ -166,7 +193,14 @@
                 [self addSubview:label];
             }
         }
+        
+        self.xNameLabel.frame = CGRectMake(self.frame.size.width - _xLabelWidth ,
+                                           self.frame.size.height - kXLabelHeight - _chartMargin + _labelMarginTop,
+                                           _xLabelWidth,
+                                           kXLabelHeight);
     }
+    
+
 }
 
 
@@ -242,6 +276,8 @@
         if (isnan(grade)) {
             grade = 0;
         }
+        
+        bar.data = value;
         bar.grade = grade;
         
         index += 1;
@@ -254,78 +290,80 @@
 
     [self viewCleanupForCollection:_bars];
 
-
     //Update Bar
     
     [self updateBar];
-    
-    //Add chart border lines
+}
 
+#pragma getter
+-(void)setShowChartBorder:(BOOL)showChartBorder
+{
+    _showChartBorder = showChartBorder;
+    
+    [self addLine];
+}
+
+-(void)addLine
+{
     if (_showChartBorder) {
         _chartBottomLine = [CAShapeLayer layer];
         _chartBottomLine.lineCap      = kCALineCapButt;
         _chartBottomLine.fillColor    = [[UIColor whiteColor] CGColor];
         _chartBottomLine.lineWidth    = 1.0;
         _chartBottomLine.strokeEnd    = 0.0;
-
+        
         UIBezierPath *progressline = [UIBezierPath bezierPath];
-
-        [progressline moveToPoint:CGPointMake(_chartMargin, self.frame.size.height - kXLabelHeight - _chartMargin)];
-        [progressline addLineToPoint:CGPointMake(self.frame.size.width - _chartMargin,  self.frame.size.height - kXLabelHeight - _chartMargin)];
-
+        CGFloat bottomLineHeight = self.frame.size.height - kXLabelHeight - _chartMargin;
+        
+        [progressline moveToPoint:CGPointMake(_chartMargin, bottomLineHeight)];
+        [progressline addLineToPoint:CGPointMake(self.frame.size.width - _chartMargin,  bottomLineHeight)];
         [progressline setLineWidth:1.0];
         [progressline setLineCapStyle:kCGLineCapSquare];
+        
         _chartBottomLine.path = progressline.CGPath;
-
-
         _chartBottomLine.strokeColor = PNLightGrey.CGColor;
-
-
+        
         CABasicAnimation *pathAnimation = [CABasicAnimation animationWithKeyPath:@"strokeEnd"];
         pathAnimation.duration = 0.5;
         pathAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
         pathAnimation.fromValue = @0.0f;
         pathAnimation.toValue = @1.0f;
+
         [_chartBottomLine addAnimation:pathAnimation forKey:@"strokeEndAnimation"];
-
         _chartBottomLine.strokeEnd = 1.0;
-
+        
         [self.layer addSublayer:_chartBottomLine];
-
+        
         //Add left Chart Line
-
+        
         _chartLeftLine = [CAShapeLayer layer];
         _chartLeftLine.lineCap      = kCALineCapButt;
         _chartLeftLine.fillColor    = [[UIColor whiteColor] CGColor];
         _chartLeftLine.lineWidth    = 1.0;
         _chartLeftLine.strokeEnd    = 0.0;
-
+        
         UIBezierPath *progressLeftline = [UIBezierPath bezierPath];
-
+        
         [progressLeftline moveToPoint:CGPointMake(_chartMargin, self.frame.size.height - kXLabelHeight - _chartMargin)];
         [progressLeftline addLineToPoint:CGPointMake(_chartMargin,  _chartMargin)];
-
+        
         [progressLeftline setLineWidth:1.0];
         [progressLeftline setLineCapStyle:kCGLineCapSquare];
         _chartLeftLine.path = progressLeftline.CGPath;
-
-
         _chartLeftLine.strokeColor = PNLightGrey.CGColor;
-
-
+        
         CABasicAnimation *pathLeftAnimation = [CABasicAnimation animationWithKeyPath:@"strokeEnd"];
         pathLeftAnimation.duration = 0.5;
         pathLeftAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
         pathLeftAnimation.fromValue = @0.0f;
         pathLeftAnimation.toValue = @1.0f;
         [_chartLeftLine addAnimation:pathLeftAnimation forKey:@"strokeEndAnimation"];
-
+        
         _chartLeftLine.strokeEnd = 1.0;
-
+        
         [self.layer addSublayer:_chartLeftLine];
     }
 }
-
 
 - (void)viewCleanupForCollection:(NSMutableArray *)array
 {
@@ -370,5 +408,41 @@
     }
 }
 
+#pragma mark getter
+
+-(UILabel*)nameLabel
+{
+    if (!_nameLabel) {
+        _nameLabel = [[UILabel alloc]init];
+        _nameLabel  =  [[UILabel alloc]init];
+        _nameLabel.textColor = PNLightGrey;
+        _nameLabel.textAlignment = NSTextAlignmentLeft;
+        _nameLabel.font = _labelFont;
+        _nameLabel.frame = CGRectMake(10, 10, _yChartLabelWidth*2, kYLabelHeight);
+    }
+    
+    return _nameLabel;
+}
+
+-(UILabel*)xNameLabel
+{
+    if (!_xNameLabel) {
+        _xNameLabel = [[UILabel alloc]init];
+        _xNameLabel.textColor = PNLightGrey;
+        _xNameLabel.textAlignment = NSTextAlignmentCenter;
+        _xNameLabel.font = _labelFont;
+        
+    }
+    
+    return _xNameLabel;
+}
+
+-(void)setLabelFont:(UIFont *)labelFont
+{
+    _labelFont = labelFont;
+    
+    self.nameLabel.font = _labelFont;
+    self.xNameLabel.font = _labelFont;
+}
 
 @end

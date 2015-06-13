@@ -14,6 +14,7 @@
 - (void)rollBack;
 
 @property (nonatomic) float grade;
+@property (nonatomic) float data;
 @property (nonatomic) CAShapeLayer *chartLine;
 @property (nonatomic) UIColor *barColor;
 @property (nonatomic) UIColor *barColorGradientStart;
@@ -22,6 +23,7 @@
 
 @property (nonatomic) CAShapeLayer *gradeLayer;
 @property (nonatomic) CATextLayer* textLayer;
+@property (nonatomic, strong) NSMutableAttributedString* gradeString;
 
 
 @end

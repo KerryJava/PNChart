@@ -39,8 +39,6 @@
 
 - (void)setGrade:(float)grade
 {
-    NSLog(@"New garde %f",grade);
-    
     CGFloat startPosY = (1 - grade) * self.frame.size.height;
 
     UIBezierPath *progressline = [UIBezierPath bezierPath];
@@ -125,7 +123,7 @@
             self.gradientMask.strokeEnd = 1.0;
             [self.gradientMask addAnimation:pathAnimation forKey:@"strokeEndAnimation"];
             
-            //set grade
+            //jet
             [self setGradeFrame:grade startPosY:startPosY];
             CABasicAnimation* opacityAnimation = [self fadeAnimation];
             [self.textLayer addAnimation:opacityAnimation forKey:nil];
@@ -164,10 +162,49 @@
 
     CGContextSetFillColorWithColor(context, self.backgroundColor.CGColor);
     CGContextFillRect(context, rect);
+    
+//    [self drawString:rect];
 }
 
+#pragma mark 
+
+-(NSMutableAttributedString*)gradeString
+{
+    if (!_gradeString) {
+        _gradeString = [[NSMutableAttributedString alloc]initWithString:@"1234"];
+        [_gradeString addAttribute:NSForegroundColorAttributeName value:[UIColor blueColor] range:NSMakeRange(0, _gradeString.length-1)];
+    }
+    
+    return _gradeString;
+}
 
 // add number display on the top of bar
+- (void)drawString:(CGRect)rect
+{
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    
+    CGContextSetTextMatrix(context , CGAffineTransformIdentity);
+    
+    CGContextTranslateCTM(context , 0 ,rect.size.height);
+    
+    CGContextScaleCTM(context, 1.0 ,-1.0);
+    
+    
+    CTFramesetterRef ctFrameSetter = CTFramesetterCreateWithAttributedString((CFMutableAttributedStringRef)self.gradeString);
+    
+    CGMutablePathRef path = CGPathCreateMutable();
+    CGRect bounds = CGRectMake(0.0, 0.0, rect.size.width, rect.size.height);
+    CGPathAddRect(path, NULL, bounds);
+    
+    CTFrameRef ctFrame = CTFramesetterCreateFrame(ctFrameSetter, CFRangeMake(0, 0), path, NULL);
+    CTFrameDraw(ctFrame, context);
+    
+    CFRelease(ctFrame);
+    CFRelease(path);
+    CFRelease(ctFrameSetter);
+}
+
 -(CGPathRef)gradePath:(CGRect)rect
 {
     return nil;
@@ -202,7 +239,7 @@
     [_chartLine addSublayer:self.textLayer];
     [self.textLayer setFontSize:textheigt/2];
 
-    [self.textLayer setString:[[NSString alloc]initWithFormat:@"%ld",(NSInteger)(grade*100)]];
+    [self.textLayer setString:[[NSString alloc]initWithFormat:@"%.0f",self.data]];
     [self.textLayer setFrame:CGRectMake(0, textStartPosY, textWidth,  textheigt)];
     self.textLayer.contentsScale = [UIScreen mainScreen].scale;
 
